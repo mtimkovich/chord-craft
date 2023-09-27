@@ -27,10 +27,11 @@ class InvalidChordError(Exception):
     pass
 
 class Chord:
-    def __init__(self, s):
-        self.parse(s)
+    def __init__(self, name):
+        self.name = name
+        self.parse(name)
 
-    def parse(self, s):
+    def parse(self, name):
         """
         (This is borrowed from ChordPro's documentation.)
 
@@ -43,7 +44,7 @@ class Chord:
         NOTES = r'[ABCDEFG](b|#)?'
         regex = f'({NOTES})(m(?!aj)|-)?([^/]+)?(/({NOTES}))?'
 
-        m = re.match(regex, s)
+        m = re.match(regex, name)
 
         if m is None:
             raise InvalidChordError(f'Could not parse given chord: {s}')
@@ -54,6 +55,12 @@ class Chord:
         self.bass = m.group(6)
 
     # TODO: Create a function that enumerates the notes of the chord.
+
+    def is_minor(self):
+        return self.qual == 'm'
+
+    def is_major(self):
+        return not self.is_minor()
 
     def __sub__(self, other):
         """Return difference in semitones between the roots of 2 chords."""

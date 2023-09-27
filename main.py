@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from chord import Chord
+from tabulate import tabulate
 
-# chords = 'G Em G Em C D C D G Em C D C D G'
+from chord import Chord
 
 """
 Major scale
@@ -15,27 +15,55 @@ major, major, min, major, major, major, minor
  G |  7 | V
  A |  9 | VI
  B | 11 | VII
- C | 12 | VIII
+
+ C |  0 | I
+ C |  1 | bII
+ C |  1 | #I
+ D |  2 | II
+ D |  3 | #II
+ D |  3 | bIII
+ E |  4 | III
+ F |  5 | IV
+ F |  6 | bV
+ F |  6 | #IV
+ G |  7 | V
+ G |  8 | #V
+ G |  8 | bVI
+ A |  9 | VI
+ A | 10 | #VI
+ A | 10 | bVII
+ B | 11 | VII
 ---------------
 
 """
 
-# diff = chords[1] - chords[0]
-# print(diff)
-
-# for n in 'CDEFGAB':
-#     diff = Chord(n) - Chord('C')
-#     print(diff)
-
 def calculate_roman(progression, tonic=None):
-    pass
+    to_roman = {
+        0: 'I',
+        2: 'II',
+        4: 'III',
+        5: 'IV',
+        7: 'V',
+        9: 'VI',
+        11: 'VII',
+    }
 
-# ii7 V7 I7
+    chords = {}
+
+    for chord in progression:
+        diff = chord - tonic
+        num = to_roman[diff]
+
+        if chord.is_minor():
+            num = num.lower()
+
+        ext = chord.ext if chord.ext is not None else ''
+        chords[chord.name] = f'{num}{ext}'
+
+    print(tabulate(chords.items(), tablefmt='plain'))
+
 chords = 'Dm7 G7 C7'
-chords = chords.split()
-chords = [Chord(c) for c in chords]
+chords = 'G Em G Em C D C D G Em C D C D G'
+chords = [Chord(c) for c in chords.split()]
 
-for c in chords:
-    print(c)
-
-calculate_roman(chords, Chord('C'))
+calculate_roman(chords, Chord('G'))
