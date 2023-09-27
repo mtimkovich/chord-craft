@@ -24,51 +24,39 @@ NOTES = {
 OCTAVE = 12
 
 class InvalidChordError(Exception):
-    "Invalid chord"
+    pass
 
 class Chord:
     def __init__(self, s):
         self.parse(s)
-
-    def match_pop(self, regex, s):
-        """Match the beginning of a string and pop off matches."""
-        m = re.match(f'^{regex}', s)
-        if m is not None:
-            match = m.group(1)
-            s = s[m.end():]
-
-            if match == '':
-                match = None
-            return match, s
-        return None, s
 
     def parse(self, s):
         """
         (This is borrowed from ChordPro's documentation.)
 
         * A root note, e.g. C, F#, or Bb
-        * An optional qualifier, e.g. m (minor), aug (augmented)
-        * An optional extension, e.g. 7, maj9
+        * An optional qualifier (qual), e.g. m (minor), aug (augmented)
+        * An optional extension (ext), e.g. 7, maj9
         * An optional bass, a slash / followed by another root note
 
         """
         NOTES = r'[ABCDEFG](b|#)?'
+        regex = f'({NOTES})(m(?!aj)|-)?([^/]+)?(/({NOTES}))?'
 
-        components = [
-            {'name': 'root',      'regex': f'({NOTES})'},
-            {'name': 'qualifier', 'regex': r'(m(?!aj)|-)'},
-            {'name': 'extension', 'regex': r'([^/]*)'},
-            {'name': 'bass',      'regex': f'/({NOTES})'},
-        ]
+        m = re.match(regex, s)
 
-        for c in components:
-            value, s = self.match_pop(c['regex'], s)
-            setattr(self, c['name'], value)
+        if m is None:
+            raise InvalidChordError(f'Could not parse given chord: {s}')
 
-        if self.root is None:
-            raise InvalidChordError()
+        self.root = m.group(1)
+        self.qual = m.group(3)
+        self.ext = m.group(4)
+        self.bass = m.group(6)
+
+    # TODO: Create a function that enumerates the notes of the chord.
 
     def __sub__(self, other):
+        """Return difference in semitones between the roots of 2 chords."""
         a_tone = NOTES[self.root]
         b_tone = NOTES[other.root]
         if a_tone < b_tone:
@@ -76,7 +64,7 @@ class Chord:
         return a_tone - b_tone
 
     def __repr__(self):
-        keys = ['root', 'qualifier', 'extension', 'bass']
+        keys = ['root', 'qual', 'ext', 'bass']
         d = {}
 
         for k in keys:
@@ -90,8 +78,10 @@ class Chord:
 if __name__ == '__main__':
     # TODO: Write some tests.
     chord = 'Bbm9/F'
-    chord = 'B/F'
-    chord = 'Ebmaj7/G'
+    # chord = 'C'
+    # chord = 'B/F'
+    # chord = 'Ebmaj7/G'
     chord = 'Em7/G'
+    # chord = 'Z7'
     c = Chord(chord)
     print(c)
