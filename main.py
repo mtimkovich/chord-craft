@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fileinput
 from tabulate import tabulate
 
 from chord import Chord
@@ -62,8 +63,12 @@ def calculate_roman(progression, tonic=None):
 
     print(tabulate(chords.items(), tablefmt='plain'))
 
-chords = 'Dm7 G7 C7'
-chords = 'G Em G Em C D C D G Em C D C D G'
-chords = [Chord(c) for c in chords.split()]
+if __name__ == '__main__':
+    # chords = 'Dm7 G7 C7'
+    chords = 'G Em G Em C D C D G Em C D C D G'
+    # chords = ''
+    # for line in fileinput.input():
+    #     chords += line
+    chords = [Chord(c) for c in chords.split()]
 
-calculate_roman(chords, Chord('G'))
+    calculate_roman(chords, Chord('G'))
