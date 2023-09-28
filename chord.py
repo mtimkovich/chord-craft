@@ -20,6 +20,8 @@ NOTES = {
     'Ab': 11,
 }
 
+NOTES_REGEX = r'[ABCDEFG](b|#)?'
+
 # Octave is 12 semitones.
 OCTAVE = 12
 
@@ -41,8 +43,7 @@ class Chord:
         * An optional bass, a slash / followed by another root note
 
         """
-        NOTES = r'[ABCDEFG](b|#)?'
-        regex = f'({NOTES})(m(?!aj)|-)?([^/]+)?(/({NOTES}))?'
+        regex = f'({NOTES_REGEX})(m(?!aj)|-)?([^/]+)?(/({NOTES_REGEX}))?'
 
         m = re.match(regex, name)
 

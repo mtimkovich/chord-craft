@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-import fileinput
+import argparse
+import re
+import sys
 from tabulate import tabulate
 
-from chord import Chord
+from chord import Chord, NOTES_REGEX
 
 """
-Major scale
-major, major, min, major, major, major, minor
-
 ---------------
  C |  0 | I
  D |  2 | II
@@ -63,12 +62,27 @@ def calculate_roman(progression, tonic=None):
 
     print(tabulate(chords.items(), tablefmt='plain'))
 
-if __name__ == '__main__':
-    # chords = 'Dm7 G7 C7'
-    chords = 'G Em G Em C D C D G Em C D C D G'
-    # chords = ''
-    # for line in fileinput.input():
-    #     chords += line
-    chords = [Chord(c) for c in chords.split()]
+def valid_note(value):
+    if not re.match(NOTES_REGEX, value):
+        raise argparse.ArgumentTypeError(f'Invalid note: {value}')
+    return value
 
-    calculate_roman(chords, Chord('G'))
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', nargs='?', type=argparse.FileType('r'),
+                        default=sys.stdin)
+    parser.add_argument('-t', '--tonic', type=valid_note, required=True)
+    return parser.parse_args()
+
+def chords_from_input(inp):
+    chords = []
+    for line in inp:
+        line = line.split()
+        chords += [Chord(c) for c in line]
+    return chords
+
+if __name__ == '__main__':
+    args = get_args()
+    chords = chords_from_input(args.input)
+
+    calculate_roman(chords, Chord(args.tonic))
