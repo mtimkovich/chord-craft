@@ -18,12 +18,31 @@ NOTES = {
     'G':  10,
     'G#': 11,
     'Ab': 11,
+
+    # TODO: Convert b to # when appropriate.
+    0:  'A',
+    1:  'Bb',
+    2:  'B',
+    3:  'C',
+    4:  'Db',
+    5:  'D',
+    6:  'Eb',
+    7:  'E',
+    8:  'F',
+    9:  'Gb',
+    10: 'G',
+    11: 'Ab',
 }
 
 NOTES_REGEX = r'[ABCDEFG](b|#)?'
 
 # Octave is 12 semitones.
 OCTAVE = 12
+
+def semitone_plus(start: str, n: int):
+    """Add semitones to a note and return the resulting note."""
+    tone = NOTES[start] + n
+    return NOTES[tone % OCTAVE]
 
 class InvalidChordError(Exception):
     pass
@@ -55,10 +74,24 @@ class Chord:
         self.ext = m.group(4)
         self.bass = m.group(6)
 
-    # TODO: Create a function that enumerates the notes of the chord.
+    def notes(self):
+        the_notes = [self.root]
+        if self.is_minor():
+            the_notes.append(semitone_plus(self.root, 3))
+        else:
+            the_notes.append(semitone_plus(self.root, 4))
+        the_notes.append(semitone_plus(self.root, 7))
+
+        # TODO: Make this less hacky.
+        if self.ext == '7':
+            the_notes.append(semitone_plus(self.root, 10))
+        elif self.ext == 'maj7':
+            the_notes.append(semitone_plus(self.root, 11))
+
+        return the_notes
 
     def is_minor(self):
-        return self.qual == 'm'
+        return self.qual in {'m', '-'}
 
     def is_major(self):
         return not self.is_minor()
@@ -85,11 +118,12 @@ class Chord:
 
 if __name__ == '__main__':
     # TODO: Write some tests.
-    chord = 'Bbm9/F'
+    # chord = 'Bbm9/F'
     # chord = 'C'
     # chord = 'B/F'
     # chord = 'Ebmaj7/G'
-    chord = 'Em7/G'
+    # chord = 'Em7/G'
     # chord = 'Z7'
+    chord = 'Ebmaj7'
     c = Chord(chord)
-    print(c)
+    print(c.notes())

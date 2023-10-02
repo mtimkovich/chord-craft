@@ -6,45 +6,19 @@ from tabulate import tabulate
 
 from chord import Chord, NOTES_REGEX
 
-"""
----------------
- C |  0 | I
- D |  2 | II
- E |  4 | III
- F |  5 | IV
- G |  7 | V
- A |  9 | VI
- B | 11 | VII
-
- C |  0 | I
- C |  1 | bII
- C |  1 | #I
- D |  2 | II
- D |  3 | #II
- D |  3 | bIII
- E |  4 | III
- F |  5 | IV
- F |  6 | bV
- F |  6 | #IV
- G |  7 | V
- G |  8 | #V
- G |  8 | bVI
- A |  9 | VI
- A | 10 | #VI
- A | 10 | bVII
- B | 11 | VII
----------------
-
-"""
-
 def calculate_roman(progression, tonic=None):
     to_roman = {
         0: 'I',
+        1: 'bII',
         2: 'II',
+        3: 'bIII',
         4: 'III',
         5: 'IV',
+        6: 'bV',
         7: 'V',
+        8: 'bVI',
         9: 'VI',
+        10: 'bVII',
         11: 'VII',
     }
 
@@ -57,8 +31,7 @@ def calculate_roman(progression, tonic=None):
         if chord.is_minor():
             num = num.lower()
 
-        ext = chord.ext if chord.ext is not None else ''
-        chords[chord.name] = f'{num}{ext}'
+        chords[chord.name] = num
 
     print(tabulate(chords.items(), tablefmt='plain'))
 
@@ -71,7 +44,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', nargs='?', type=argparse.FileType('r'),
                         default=sys.stdin)
-    parser.add_argument('-t', '--tonic', type=valid_note, required=True)
+    # parser.add_argument('-t', '--tonic', type=valid_note, required=True)
     return parser.parse_args()
 
 def chords_from_input(inp):
@@ -84,5 +57,7 @@ def chords_from_input(inp):
 if __name__ == '__main__':
     args = get_args()
     chords = chords_from_input(args.input)
+    for chord in chords:
+        print(f'{chord.name}: {" ".join(chord.notes())}')
 
-    calculate_roman(chords, Chord(args.tonic))
+    # calculate_roman(chords, Chord(args.tonic))
