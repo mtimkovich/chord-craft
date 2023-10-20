@@ -6,7 +6,7 @@ from tabulate import tabulate
 
 from chord import Chord, NOTES_REGEX
 
-def calculate_roman(progression, tonic=None):
+def calculate_roman(args):
     to_roman = {
         0: 'I',
         1: 'bII',
@@ -22,6 +22,9 @@ def calculate_roman(progression, tonic=None):
         11: 'VII',
     }
 
+    progression = chords_from_input(args.input)
+    tonic = Chord(args.tonic)
+
     chords = {}
 
     for chord in progression:
@@ -35,6 +38,18 @@ def calculate_roman(progression, tonic=None):
 
     print(tabulate(chords.items(), tablefmt='plain'))
 
+def print_notes(args):
+    chords = chords_from_input(args.input)
+    s = set()
+    output = []
+    for chord in chords:
+        if chord.name in s:
+            continue
+        output.append([chord.name] + chord.notes())
+        s.add(chord.name)
+
+    print(tabulate(output, tablefmt='plain'))
+
 def valid_note(value):
     if not re.match(NOTES_REGEX, value):
         raise argparse.ArgumentTypeError(f'Invalid note: {value}')
@@ -43,8 +58,17 @@ def valid_note(value):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', nargs='?', type=argparse.FileType('r'),
-                        default=sys.stdin)
-    # parser.add_argument('-t', '--tonic', type=valid_note, required=True)
+                        default=sys.stdin, help='chord input')
+    subparsers = parser.add_subparsers()
+
+    prog = subparsers.add_parser('progression', aliases=['prog', 'p'],
+                                 help='Output chord progression')
+    prog.add_argument('-t', '--tonic', type=valid_note, default='C')
+    prog.set_defaults(func=calculate_roman)
+
+    chords = subparsers.add_parser('chords', aliases=['c'], help='Print notes of chords')
+    chords.set_defaults(func=print_notes)
+
     return parser.parse_args()
 
 def chords_from_input(inp):
@@ -56,8 +80,4 @@ def chords_from_input(inp):
 
 if __name__ == '__main__':
     args = get_args()
-    chords = chords_from_input(args.input)
-    for chord in chords:
-        print(f'{chord.name}: {" ".join(chord.notes())}')
-
-    # calculate_roman(chords, Chord(args.tonic))
+    args.func(args)
